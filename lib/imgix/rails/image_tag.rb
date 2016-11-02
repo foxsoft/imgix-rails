@@ -18,7 +18,7 @@ class Imgix::Rails::ImageTag < Imgix::Rails::Tag
     if is_lazy
       normal_opts[:"data-src"] = ix_image_url(@source, @options)
       normal_opts[:class] = "#{normal_opts[:class].to_s} lazyload"
-      image_tag(ix_image_url(@source, @options.merge({ blur: 1500, auto: "format,compress", q: 20, fm: "jpg" })), normal_opts)
+      image_tag(ix_image_url(@source, @options.merge({ blur: 300, px: 10, auto: "format,compress", q: 20, fm: "jpg" })), normal_opts)
     else
       image_tag(ix_image_url(@source, @options), normal_opts)
     end
