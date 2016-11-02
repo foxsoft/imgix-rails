@@ -1,8 +1,10 @@
 require "imgix/rails/tag"
 
 class Imgix::Rails::ImageTag < Imgix::Rails::Tag
+  REMOVE_ATTRIBUTES = [:lazy, :max_width].freeze
   def render
-    if @options[:lazy]
+    is_lazy = @options[:lazy]
+    if is_lazy
       @options[:"data-srcset"] = srcset
     else
       @options[:srcset] = srcset
@@ -10,15 +12,16 @@ class Imgix::Rails::ImageTag < Imgix::Rails::Tag
     @options[:sizes] ||= '100vw'
 
     @source = replace_hostname(@source)
-    normal_opts = @options.slice!(*self.class.available_parameters)
+    normal_opts = (@options.slice!(*self.class.available_parameters))
+    REMOVE_ATTRIBUTES.each { |attribute| normal_opts.delete(attribute) }
 
-    normal_url = ix_image_url(@source, @options)
-    lazy_url = ix_image_url(@source, @options.merge({ blur: 1500, auto: "format,compress", q: 20, fm: "jpg" }))
-
-    if @options[:lazy]
+    if is_lazy
       normal_opts[:"data-src"] = ix_image_url(@source, @options)
+      normal_opts[:class] = "#{normal_opts[:class].to_s} lazyload"
+      image_tag(ix_image_url(@source, @options.merge({ blur: 1500, auto: "format,compress", q: 20, fm: "jpg" })), normal_opts)
+    else
+      image_tag(ix_image_url(@source, @options), normal_opts)
     end
 
-    image_tag(@options[:lazy] ? lazy_url : normal_url, normal_opts)
   end
 end
